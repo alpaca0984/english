@@ -39,12 +39,55 @@ function capitalize(s) {
 
 function initialize() {
   speech = new webkitSpeechRecognition();
-  <%# speech.continuous = true; %>
-  speech.continuous = false;
+  speech.continuous = true;
   speech.maxAlternatives = 5;
   speech.interimResults = true;
   speech.lang = getLang(localStorage["language"]);
   speech.onend = reset;
+  speech.onerror = function(e) {
+    var msg = e.error + " error";
+    if (e.error === 'no-speech') {
+      msg = "No speech was detected. Please try again.";
+    } else if (e.error === 'audio-capture') {
+      msg = "Please ensure that a microphone is connected to your computer.";
+    } else if (e.error === 'not-allowed') {
+      msg = "The app cannot access your microphone. Please go to chrome://settings/contentExceptions#media-stream and allow Microphone access to this website.";
+    }
+    $("#warning").html("<p>" + msg + "</p>");
+    setTimeout(function() {
+      $("#warning").html("");
+    }, 5000);
+  };
+  speech.onresult = function(e) {
+    var interim_transcript = '';
+    if (typeof(e.results) == 'undefined') {
+      reset();
+      return;
+    }
+    for (var i = e.resultIndex; i < e.results.length; ++i) {
+      var val = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        final_transcript += " " + val;
+      } else {
+        interim_transcript += " " + val;
+      }
+    }
+    $("#labnol").html(format(capitalize(final_transcript)));
+    $("#notfinal").html(format(interim_transcript));
+    console.log(final_transcript);
+  };
+  speech.onaudioend = function() {
+    console.log("audioend");
+  };
+  speech.onsoundend = function() {
+    console.log("soundend");
+  };
+  speech.onspeechend = function() {
+    console.log("speechend");
+  };
+  speech.onend = function() {
+    console.log("end");
+  };
 }
 
 var clear, working, speech, final_transcript = "";
@@ -80,111 +123,51 @@ if (typeof(webkitSpeechRecognition) !== 'function') {
     }
   }, 2000);
 
-  initialize();
-  clearSlate();
-
   var setNextQuestion = function() {
+    speech.stop();
+    if (questions[++qIdx] == null) {
+      return;
+    }
     clearSlate();
-    $("#correct_answer").text(questions[++qIdx].q_body);
+    $("#correct_answer").text(questions[qIdx].q_body);
     timer._reset();
     speech.start();
   };
 
-  //------------------- 
   // Timer object
-  //------------------- 
-
   var Timer = function(args) {
     this.length = args.length;
     this.rest = args.length;
     this.interval = args.interval;
   };
-
-  Timer.prototype._event = function() {
-    if (--this.rest == 0) {
-      var answer = $("#labnol").text().trim();
-      var correct_answer = $("#correct_answer").text().trim();
-      if (answer == correct_answer) {
-        alert("正解!");
-      } else {
-        alert("不正解...");
-      }
-      speech.stop();
-      setNextQuestion();
-    }
-  };
-
   Timer.prototype._start = function() {
     var _this = this;
-    setInterval(function() { _this._event(); }, _this.interval);
+    setInterval(function() { _this.closure(); }, _this.interval);
   };
-
   Timer.prototype._reset = function() {
     this.rest = this.length;
   };
-
-  var timer = new Timer({length: 5, interval: 1000});
-
-  //------------------- 
-  // /Timer object
-  //------------------- 
 
   //------------------- 
   // play dictation
   //------------------- 
 
   var qIdx = 0;
-  $("#correct_answer").val(questions[qIdx]);
-  timer._start();
+  var timer = new Timer({length: 8, interval: 1000});
+  timer.closure = function() {
+    if (--this.rest == 0) {
+      var answer = $("#labnol").text().trim();
+      var correct_answer = $("#correct_answer").text().trim();
+      var message = (answer == correct_answer) ? "正解!" : "不正解...";
+      alert(message);
+      setNextQuestion();
+    }
+  };
+  <%# timer._start(); %>
+
+  initialize();
+  clearSlate();
   speech.start();
-
-  speech.onerror = function(e) {
-    var msg = e.error + " error";
-    if (e.error === 'no-speech') {
-      msg = "No speech was detected. Please try again.";
-    } else if (e.error === 'audio-capture') {
-      msg = "Please ensure that a microphone is connected to your computer.";
-    } else if (e.error === 'not-allowed') {
-      msg = "The app cannot access your microphone. Please go to chrome://settings/contentExceptions#media-stream and allow Microphone access to this website.";
-    }
-    $("#warning").html("<p>" + msg + "</p>");
-    setTimeout(function() {
-      $("#warning").html("");
-    }, 5000);
-  };
-
-  speech.onresult = function(e) {
-    var interim_transcript = '';
-    if (typeof(e.results) == 'undefined') {
-      reset();
-      return;
-    }
-    for (var i = e.resultIndex; i < e.results.length; ++i) {
-      var val = e.results[i][0].transcript;
-      if (e.results[i].isFinal) {
-        final_transcript += " " + val;
-      } else {
-        interim_transcript += " " + val;
-      }
-    }
-    $("#labnol").html(format(capitalize(final_transcript)));
-    $("#notfinal").html(format(interim_transcript));
-    console.log("onresult");
-  };
-
-  speech.onaudioend = function() {
-    console.log("audioend");
-  };
-  speech.onsoundend = function() {
-    console.log("soundend");
-  };
-  speech.onspeechend = function() {
-    console.log("speechend");
-  };
-  speech.onend = function() {
-    console.log("end");
-    console.log($("#labnol").text());
-  };
 }
 
 function getLang(opt) {
