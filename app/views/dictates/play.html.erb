@@ -23,8 +23,6 @@ $(function() {
   };
 
   var Recognizer = function(args) {
-    var _this = this;
-
     this.final_transcript = '';
     this.util = new Util();
 
@@ -56,14 +54,14 @@ $(function() {
       for (var i = e.resultIndex; i < e.results.length; ++i) {
         var val = e.results[i][0].transcript;
         if (e.results[i].isFinal) {
-          _this.final_transcript += " " + val;
+          this.final_transcript += " " + val;
         } else {
           interim_transcript += " " + val;
         }
       }
-      $("#labnol").html(_this.util.format(_this.util.capitalize(_this.final_transcript)));
-      $("#notfinal").html(_this.util.format(interim_transcript));
-    };
+      $("#labnol").html(this.util.format(this.util.capitalize(this.final_transcript)));
+      $("#notfinal").html(this.util.format(interim_transcript));
+    }.bind(this);
     this.speech.onaudioend = function() {
       console.log("audioend");
     };
@@ -77,43 +75,61 @@ $(function() {
       console.log("end");
     };
   };
-  
+
+  var Question = function() {
+    this.list = [
+      {q_id: 1, q_body: "This is a pen"},
+      {q_id: 2, q_body: "He is a teacher"},
+      {q_id: 3, q_body: "I like Alpaca"}
+    ];
+    this.idx = 0;
+  };
+  Question.prototype.next = function() {
+    return this.list[++this.idx];
+  };
+  Question.prototype.hasNext = function() {
+    return this.list[this.idx + 1] != null;
+  };
+
   // Timer object
   var Timer = function(args) {
     this.recognizer = new Recognizer();
+    this.question = new Question();
 
     this.length = args.length;
     this.rest = args.length;
     this.interval = args.interval;
-    this.questions = [
-      {q_id: 1, q_body: "This is a pen"},
-      {q_id: 2, q_body: "He is a teacher"},
-      {q_id: 3, q_body: "I like Alpaca"},
-    ];
-    this.qIdx = 0;
+
+    this.doms = {
+      $labnol: $("#labnol"),
+      $correct: $("#correct_answer")
+    };
   };
   Timer.prototype.start = function() {
-    var _this = this;
     this.recognizer.speech.start();
-    setInterval(function() { _this.closure(); }, this.interval);
+    this.repeat = setInterval(this.closure.bind(this), this.interval);
+  };
+  Timer.prototype.stop = function() {
+    this.recognizer.speech.stop();
+    clearInterval(this.repeat);
   };
   Timer.prototype.inflect = function(s) {
     return s.replace(/\s+/g, '').toLowerCase();
   };
+  Timer.prototype.refresh = function() {
+    this.doms.$correct.text(this.question.next().q_body);
+    this.doms.$labnol.text('');
+    this.recognizer.final_transcript = '';
+    this.rest = this.length;
+  };
+  Timer.prototype.judge = function() {
+    return this.inflect(this.doms.$labnol.text()) == this.inflect(this.doms.$correct.text())
+  };
   Timer.prototype.closure = function() {
-    if (--this.rest == 0) {
-      var $labnol = $("#labnol");
-      var $correct = $("#correct_answer");
-      var message = (this.inflect($labnol.text()) == this.inflect($correct.text())) ? "正解!" : "不正解...";
+    if (--this.rest <= 0) {
+      var message = (this.judge()) ? "正解!" : "不正解...";
       alert(message);
-      if (this.questions[++this.qIdx] == null) {
-        return;
-      }
-
-      $correct.text(this.questions[this.qIdx].q_body);
-      this.recognizer.final_transcript = '';
-      $labnol.text('');
-      this.rest = this.length;
+      this.question.hasNext() ? this.refresh() : this.stop();
     }
   };
 
