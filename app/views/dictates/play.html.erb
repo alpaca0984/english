@@ -123,17 +123,6 @@ if (typeof(webkitSpeechRecognition) !== 'function') {
     }
   }, 2000);
 
-  var setNextQuestion = function() {
-    speech.stop();
-    if (questions[++qIdx] == null) {
-      return;
-    }
-    clearSlate();
-    $("#correct_answer").text(questions[qIdx].q_body);
-    timer._reset();
-    speech.start();
-  };
-
   // Timer object
   var Timer = function(args) {
     this.length = args.length;
@@ -160,10 +149,15 @@ if (typeof(webkitSpeechRecognition) !== 'function') {
       var correct_answer = $("#correct_answer").text().trim();
       var message = (answer == correct_answer) ? "正解!" : "不正解...";
       alert(message);
-      setNextQuestion();
+      if (questions[++qIdx] == null) {
+        return;
+      }
+      clearSlate();
+      $("#correct_answer").text(questions[qIdx].q_body);
+      this._reset();
     }
   };
-  <%# timer._start(); %>
+  timer._start();
 
   initialize();
   clearSlate();
