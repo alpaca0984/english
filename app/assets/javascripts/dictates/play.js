@@ -65,11 +65,7 @@ $(function() {
   };
 
   var Question = function() {
-    this.list = [
-      {q_id: 1, q_body: "This is a pen"},
-      {q_id: 2, q_body: "He is a teacher"},
-      {q_id: 3, q_body: "I like Alpaca"}
-    ];
+    this.list = gon.sentences;
     this.idx = 0;
   };
   Question.prototype.current = function() {
@@ -93,11 +89,11 @@ $(function() {
 
     this.doms = {
       $labnol: $("#labnol"),
-      $correct: $("#correct_answer")
+      $japanese: $("#japanese")
     };
   };
   Timer.prototype.start = function() {
-    this.doms.$correct.text(this.question.current().q_body);
+    this.doms.$japanese.text(this.question.current().japanese);
     this.recognizer.speech.start();
     this.repeat = setInterval(this.closure.bind(this), this.interval);
   };
@@ -112,16 +108,18 @@ $(function() {
     this.repeat = setInterval(this.closure.bind(this), this.interval);
   };
   Timer.prototype.inflect = function(s) {
-    return s.replace(/\s+/g, '').toLowerCase();
+    return s.replace(/[\s+\.]/g, '').toLowerCase();
   };
   Timer.prototype.refresh = function() {
-    this.doms.$correct.text(this.question.next().q_body);
+    this.doms.$japanese.text(this.question.next().japanese);
     this.doms.$labnol.text('');
     this.recognizer.final_transcript = '';
     this.rest = this.length;
   };
   Timer.prototype.judge = function() {
-    return this.inflect(this.doms.$labnol.text()) == this.inflect(this.doms.$correct.text());
+    console.log(this.inflect(this.doms.$labnol.text()));
+    console.log(this.inflect(this.question.current().english));
+    return this.inflect(this.doms.$labnol.text()) == this.inflect(this.question.current().english);
   };
   Timer.prototype.closure = function() {
     console.log(this.rest);
