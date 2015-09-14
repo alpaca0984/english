@@ -89,7 +89,8 @@ $(function() {
 
     this.doms = {
       $labnol: $("#labnol"),
-      $japanese: $("#japanese")
+      $japanese: $("#japanese"),
+      $correct: $("#correct")
     };
   };
   Timer.prototype.start = function() {
@@ -113,6 +114,7 @@ $(function() {
   Timer.prototype.refresh = function() {
     this.doms.$japanese.text(this.question.next().japanese);
     this.doms.$labnol.text('');
+    this.doms.$correct.find("span").text('');
     this.recognizer.final_transcript = '';
     this.rest = this.length;
   };
@@ -124,6 +126,7 @@ $(function() {
   Timer.prototype.closure = function() {
     console.log(this.rest);
     if (--this.rest <= 0) {
+      this.doms.$correct.find("span").text(this.question.current().english);
       var message = (this.judge()) ? "正解!" : "不正解...";
       alert(message);
       this.question.hasNext() ? this.refresh() : this.stop();

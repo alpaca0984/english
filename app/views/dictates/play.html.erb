@@ -1,17 +1,31 @@
-<h1>Dictates#play</h1>
-<p>Find me in app/views/dictates/play.html.erb</p>
-
-<div id="speech">
-  <span id="labnol" contenteditable="true"></span>
-  <span id="notfinal" contenteditable="true"></span>
-</div>
-
-<div>
-  <span id="japanese"></span>
-</div>
-
-<%= button_tag "START", id: 'start', class: 'hoge' %>
-<%= button_tag "PAUSE", id: 'pause', class: 'hoge' %>
-<%= button_tag "RESUME", id: 'resume', class: 'hoge' %>
-
 <%= javascript_include_tag "dictates/play" %>
+<%= stylesheet_link_tag "dictates/play" %>
+
+<h1>Lighting English</h1>
+
+<div id="header">
+</div>
+
+<div class="wrapper">
+  <div class="container clearfix">
+    <div>
+      <span id="japanese"></span>
+    </div>
+
+    <div id="speech">
+      <span id="labnol" contenteditable="true"></span>
+      <span id="notfinal" contenteditable="true"></span>
+    </div>
+
+    <div id="correct">
+      <span></span>
+    </div>
+    
+    <%= button_tag "START", id: 'start', class: 'hoge' %>
+    <%= button_tag "PAUSE", id: 'pause', class: 'hoge' %>
+    <%= button_tag "RESUME", id: 'resume', class: 'hoge' %>
+  </div>
+</div>
+
+<div id="footer">
+</div>
