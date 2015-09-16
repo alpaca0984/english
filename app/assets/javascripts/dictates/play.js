@@ -90,7 +90,8 @@ $(function() {
     this.doms = {
       $labnol: $("#labnol"),
       $japanese: $("#japanese"),
-      $correct: $("#correct")
+      $correct: $("#correct"),
+      $countdown: $("#countdown p")
     };
   };
   Timer.prototype.start = function() {
@@ -114,7 +115,7 @@ $(function() {
   Timer.prototype.refresh = function() {
     this.doms.$japanese.text(this.question.next().japanese);
     this.doms.$labnol.text('');
-    this.doms.$correct.find("span").text('');
+    this.doms.$correct.text('');
     this.recognizer.final_transcript = '';
     this.rest = this.length;
   };
@@ -124,11 +125,11 @@ $(function() {
     return this.inflect(this.doms.$labnol.text()) == this.inflect(this.question.current().english);
   };
   Timer.prototype.closure = function() {
-    console.log(this.rest);
-    if (--this.rest <= 0) {
-      this.doms.$correct.find("span").text(this.question.current().english);
-      var message = (this.judge()) ? "正解!" : "不正解...";
-      alert(message);
+    this.doms.$countdown.text(--this.rest + ' sec');
+    if (this.rest <= 0) {
+      this.doms.$correct.text(this.question.current().english);
+      var message = (this.judge()) ? "○ 正解!" : "× 不正解...";
+      this.doms.$countdown.text(message);
       this.question.hasNext() ? this.refresh() : this.stop();
     }
   };

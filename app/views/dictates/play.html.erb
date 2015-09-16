@@ -1,31 +1,50 @@
 <%= javascript_include_tag "dictates/play" %>
 <%= stylesheet_link_tag "dictates/play" %>
 
-<h1>Lighting English</h1>
 
 <div id="header">
+  <h1>Lightning English</h1>
 </div>
 
 <div class="wrapper">
   <div class="container clearfix">
-    <div>
-      <span id="japanese"></span>
+    <div class="container_left">
+      <div class="sentences">
+        <div id="countdown">
+          <p></p>
+        </div>
+        <div class="sentences_inner">
+          <h3>Japanese</h3>
+          <p id="japanese"></p>
+        </div>
+
+        <div class="sentences_inner">
+          <h3>Your English</h3>
+          <p id="answer">
+            <span id="labnol"></span>
+            <span id="notfinal"></span>
+          </p>
+        </div>
+
+        <div class="sentences_inner">
+          <h3>Correct Sentence</h3>
+          <p id="correct"></p>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <%= button_tag "START", id: 'start', class: 'hoge' %>
+        <%= button_tag "PAUSE", id: 'pause', class: 'hoge' %>
+        <%= button_tag "RESUME", id: 'resume', class: 'hoge' %>
+      </div>
     </div>
 
-    <div id="speech">
-      <span id="labnol" contenteditable="true"></span>
-      <span id="notfinal" contenteditable="true"></span>
+    <div class="container_right">
+      <p>How To Play</p>
     </div>
-
-    <div id="correct">
-      <span></span>
-    </div>
-    
-    <%= button_tag "START", id: 'start', class: 'hoge' %>
-    <%= button_tag "PAUSE", id: 'pause', class: 'hoge' %>
-    <%= button_tag "RESUME", id: 'resume', class: 'hoge' %>
   </div>
 </div>
 
 <div id="footer">
+  <p>© Alpaca0984</p>
 </div>
