@@ -4,7 +4,7 @@ timeout 15
 preload_app true  # 更新時ダウンタイム無し
 
 listen "/tmp/unicorn.sock"
-pid "/tmp/unicorn.pid"
+pid "/var/www/project/english/current/tmp/pids/unicorn.pid"
 
 before_fork do |server, worker|
   if defined?(ActiveRecord::Base)
