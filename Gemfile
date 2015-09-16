@@ -34,6 +34,8 @@ gem 'capistrano-rails', group: :development
 
 gem 'activeadmin', github: 'activeadmin'
 
+gem 'dotenv-rails'
+
 # Plus integrations with:
 gem 'devise'
 gem 'cancan' # or cancancan
