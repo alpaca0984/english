@@ -13,13 +13,13 @@ $(function() {
     this.final_transcript = '';
     this.util = new Util();
 
-    this.speech = new webkitSpeechRecognition();
-    this.speech.continuous = true;
-    this.speech.maxAlternatives = 5;
-    this.speech.interimResults = true;
-    this.speech.lang = 'en-us';
-    this.speech.onend = function() {};
-    this.speech.onerror = function(e) {
+    var speech = new webkitSpeechRecognition();
+    speech.continuous = true;
+    speech.maxAlternatives = 5;
+    speech.interimResults = true;
+    speech.lang = 'en-us';
+    speech.onend = function() {};
+    speech.onerror = function(e) {
       var msg = e.error + " error";
       if (e.error === 'no-speech') {
         msg = "No speech was detected. Please try again.";
@@ -33,7 +33,7 @@ $(function() {
         $("#warning").html("");
       }, 5000);
     };
-    this.speech.onresult = function(e) {
+    speech.onresult = function(e) {
       if (typeof(e.results) == 'undefined') {
         return;
       }
@@ -50,18 +50,19 @@ $(function() {
       $("#labnol").html(this.util.format(this.util.capitalize(this.final_transcript)));
       $("#notfinal").html(this.util.format(interim_transcript));
     }.bind(this);
-    this.speech.onaudioend = function() {
+    speech.onaudioend = function() {
       console.log("audioend");
     };
-    this.speech.onsoundend = function() {
+    speech.onsoundend = function() {
       console.log("soundend");
     };
-    this.speech.onspeechend = function() {
+    speech.onspeechend = function() {
       console.log("speechend");
     };
-    this.speech.onend = function() {
+    speech.onend = function() {
       console.log("end");
     };
+    this.speech = speech;
   };
 
   var Question = function() {
@@ -95,6 +96,7 @@ $(function() {
     };
   };
   Timer.prototype.start = function() {
+    this.doms.$countdown.text(this.rest + ' sec');
     this.doms.$japanese.text(this.question.current().japanese);
     this.recognizer.speech.start();
     this.repeat = setInterval(this.closure.bind(this), this.interval);
@@ -113,11 +115,12 @@ $(function() {
     return s.replace(/[\s+\.]/g, '').toLowerCase();
   };
   Timer.prototype.refresh = function() {
+    this.rest = this.length;
+    this.doms.$countdown.text(this.rest + ' sec');
     this.doms.$japanese.text(this.question.next().japanese);
     this.doms.$labnol.text('');
     this.doms.$correct.text('');
     this.recognizer.final_transcript = '';
-    this.rest = this.length;
   };
   Timer.prototype.judge = function() {
     console.log(this.inflect(this.doms.$labnol.text()));
@@ -130,7 +133,9 @@ $(function() {
       this.doms.$correct.text(this.question.current().english);
       var message = (this.judge()) ? "○ 正解!" : "× 不正解...";
       this.doms.$countdown.text(message);
-      this.question.hasNext() ? this.refresh() : this.stop();
+      if (this.rest <= -2) {
+        this.question.hasNext() ? this.refresh() : this.stop();
+      }
     }
   };
 
