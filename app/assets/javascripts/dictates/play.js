@@ -112,7 +112,7 @@ $(function() {
     this.repeat = setInterval(this.closure.bind(this), this.interval);
   };
   Timer.prototype.inflect = function(s) {
-    return s.replace(/[\s+\.]/g, '').toLowerCase();
+    return s.replace(/[\s+\.\?,\-]/g, '').toLowerCase();
   };
   Timer.prototype.refresh = function() {
     this.rest = this.length;
