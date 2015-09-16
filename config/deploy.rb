@@ -34,6 +34,10 @@ set :scm, :git
 # Default value for keep_releases is 5
 # set :keep_releases, 5
 
+set :rbenv_ruby, '2.2.1'
+
+set :unicorn_config_path, "config/unicorn.rb"
+
 namespace :deploy do
 
   after :restart, :clear_cache do

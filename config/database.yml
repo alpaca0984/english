@@ -49,6 +49,6 @@ test:
 #
 production:
   <<: *default
-  database: english_production
-  username: english
-  password: <%= ENV['ENGLISH_DATABASE_PASSWORD'] %>
+  database: english_development
+  username: test
+  password: test
