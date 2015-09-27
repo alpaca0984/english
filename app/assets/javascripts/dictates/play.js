@@ -12,13 +12,16 @@ $(function() {
   var Recognizer = function(args) {
     this.final_transcript = '';
     this.util = new Util();
+    this.recognizing = false;
 
     var speech = new webkitSpeechRecognition();
     speech.continuous = true;
     speech.maxAlternatives = 5;
     speech.interimResults = true;
     speech.lang = 'en-us';
-    speech.onend = function() {};
+    speech.onstart = function() {
+      this.recognizing = true;
+    }.bind(this);
     speech.onerror = function(e) {
       var msg = e.error + " error";
       if (e.error === 'no-speech') {
@@ -61,8 +64,12 @@ $(function() {
     };
     speech.onend = function() {
       console.log("end");
-    };
+      this.recognizing = false;
+    }.bind(this);
     this.speech = speech;
+    this.isRecognizing = function() {
+      return this.recognizing;
+    };
   };
 
   var Question = function() {
@@ -71,6 +78,9 @@ $(function() {
   };
   Question.prototype.current = function() {
     return this.list[this.idx];
+  };
+  Question.prototype.reset = function() {
+    this.idx = 0;
   };
   Question.prototype.next = function() {
     return this.list[++this.idx];
@@ -87,6 +97,12 @@ $(function() {
     this.length = args.length;
     this.rest = args.length;
     this.interval = args.interval;
+    this.STATUSES = {
+      PLAYING: 1,
+      PAUSING: 2,
+      STOPPING: 3
+    };
+    this.statusNow = this.STATUSES.STOPPING;
 
     this.doms = {
       $labnol: $("#labnol"),
@@ -96,31 +112,49 @@ $(function() {
     };
   };
   Timer.prototype.start = function() {
-    this.doms.$countdown.text(this.rest + ' sec');
-    this.doms.$japanese.text(this.question.current().japanese);
-    this.recognizer.speech.start();
-    this.repeat = setInterval(this.closure.bind(this), this.interval);
+    if (!this.recognizer.isRecognizing()) {
+      this.recognizer.speech.start();
+    }
+    if (this.statusNow === this.STATUSES.PAUSING || this.statusNow === this.STATUSES.STOPPING) {
+      this.repeat = setInterval(this.closure.bind(this), this.interval);
+    }
+    if (this.statusNow === this.STATUSES.STOPPING) {
+      this.refresh();
+      this.question.reset();
+      this.doms.$countdown.text(this.rest + ' sec');
+      this.doms.$japanese.text(this.question.current().japanese);
+    }
+    this.statusNow = this.STATUSES.PLAYING;
   };
   Timer.prototype.stop = function() {
     this.recognizer.speech.stop();
     clearInterval(this.repeat);
+    this.statusNow = this.STATUSES.STOPPING;
   };
   Timer.prototype.pause = function() {
     clearInterval(this.repeat);
+    this.statusNow = this.STATUSES.PAUSING;
   };
   Timer.prototype.resume = function() {
     this.repeat = setInterval(this.closure.bind(this), this.interval);
   };
   Timer.prototype.inflect = function(s) {
-    return s.replace(/[\s+\.\?,\-]/g, '').toLowerCase();
+    return s.replace(/[\s\.\?,\-!]/g, '').toLowerCase();
   };
-  Timer.prototype.refresh = function() {
-    this.rest = this.length;
-    this.doms.$countdown.text(this.rest + ' sec');
-    this.doms.$japanese.text(this.question.next().japanese);
+  Timer.prototype.refresh = function(args) {
+    var params = $.extend({rest: true}, args);
+    if (params.rest) {
+      this.rest = this.length;
+    }
     this.doms.$labnol.text('');
     this.doms.$correct.text('');
+    $("#notfinal").text('');
     this.recognizer.final_transcript = '';
+  };
+  Timer.prototype.next = function() {
+    this.refresh();
+    this.doms.$countdown.text(this.rest + ' sec');
+    this.doms.$japanese.text(this.question.next().japanese);
   };
   Timer.prototype.judge = function() {
     console.log(this.inflect(this.doms.$labnol.text()));
@@ -128,14 +162,15 @@ $(function() {
     return this.inflect(this.doms.$labnol.text()) == this.inflect(this.question.current().english);
   };
   Timer.prototype.closure = function() {
-    this.doms.$countdown.text(--this.rest + ' sec');
-    if (this.rest <= 0) {
+    --this.rest;
+    if (this.rest > 0) {
+      this.doms.$countdown.text(this.rest + ' sec');
+    } else if (this.rest == 0) {
       this.doms.$correct.text(this.question.current().english);
       var message = (this.judge()) ? "○ 正解!" : "× 不正解...";
       this.doms.$countdown.text(message);
-      if (this.rest <= -2) {
-        this.question.hasNext() ? this.refresh() : this.stop();
-      }
+    } else if (-1 > this.rest) {
+      this.question.hasNext() ? this.next() : this.stop();
     }
   };
 
@@ -152,7 +187,7 @@ $(function() {
     timer.pause();
   });
 
-  $("#resume").on("click", function() {
-    timer.resume();
+  $("#clear").on("click", function() {
+    timer.refresh({rest: false});
   });
 });

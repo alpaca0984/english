@@ -1,5 +1,5 @@
 class DictatesController < ApplicationController
   def play
-    gon.sentences = Sentence.all
+    gon.sentences = Sentence.limit(1000)
   end
 end

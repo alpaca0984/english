@@ -3,6 +3,9 @@ Rails.application.routes.draw do
   ActiveAdmin.routes(self)
   get 'dictates/play'
 
+  get '/' => 'dictates#play'
+  get '/dictates/' => 'dictates#play'
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
