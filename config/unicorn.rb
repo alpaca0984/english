@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
+
+shared_path = '/var/www/project/english/shared/'
+current_path = '/var/www/project/english/current/'
+
 worker_processes Integer(ENV["WEB_CONCURRENCY"] || 3)
 timeout 15
 preload_app true  # 更新時ダウンタイム無し
 
-listen "/tmp/unicorn.sock"
-pid "/var/www/project/english/current/tmp/pids/unicorn.pid"
+# ソケット経由で通信する
+# ここがcapistranoの設定と合致していないと失敗する
+listen File.expand_path('tmp/sockets/unicorn.sock', shared_path)
+pid File.expand_path('tmp/pids/unicorn.pid', shared_path)
+
+# capistrano 用に RAILS_ROOT を指定
+working_directory current_path
 
 before_fork do |server, worker|
   if defined?(ActiveRecord::Base)

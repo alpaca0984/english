@@ -36,7 +36,8 @@ set :keep_releases, 5
 
 set :rbenv_ruby, '2.2.1'
 
-set :unicorn_config_path, "config/unicorn.rb"
+set :unicorn_pid, "#{shared_path}/tmp/pids/unicorn.pid"
+set :unicorn_config_path, "#{release_path}/config/unicorn.rb"
 
 namespace :deploy do
 
