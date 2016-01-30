@@ -5,6 +5,7 @@ Rails.application.routes.draw do
 
   get '/' => 'dictates#play'
   get '/dictates/' => 'dictates#play'
+  get '/error/' => 'dictates#error' 
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
