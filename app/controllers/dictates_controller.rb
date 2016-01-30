@@ -4,6 +4,6 @@ class DictatesController < ApplicationController
   end
 
   def error
-    head 502
+    render text: '500エラーが発生しました', status: 500 and return
   end
 end
